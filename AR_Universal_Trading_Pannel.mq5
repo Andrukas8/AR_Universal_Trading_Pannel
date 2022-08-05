@@ -17,8 +17,8 @@
 double ask;
 double bid;
 
-double ask_tp;
-double bid_tp;
+double tpBuy;
+double tpSell;
 
 double slPips; // Stoploss in pips
 double RiskToReward; // RRR
@@ -30,8 +30,8 @@ string text = "No text added";
 
 int OnInit()
   {      
-   int formX = 50;
-   int formY = 150;
+   int formX = 5;
+   int formY = 20;
    int formElHeight = 30;   
    int formElOffset = 1;
    
@@ -85,26 +85,28 @@ void OnTick()
    
    ask = SymbolInfoDouble(_Symbol,SYMBOL_ASK);
    bid = SymbolInfoDouble(_Symbol,SYMBOL_BID);   
+     
+   slSell = NormalizeDouble(bid + slPips*_Point*10,4);
+   slBuy = NormalizeDouble(ask - slPips*_Point*10,4);
+     
+   tpSell = NormalizeDouble(bid - RiskToReward * (slSell - bid),4);
+   tpBuy = NormalizeDouble(ask + RiskToReward * (ask - slBuy),4);
+          
    
-   slSell = NormalizeDouble(ask + slPips*_Point*10,4);
-   slBuy = NormalizeDouble(bid - slPips*_Point*10,4);
-      
-   ask_tp = NormalizeDouble(ask + RiskToReward * (ask - slBuy),4);
-   bid_tp = NormalizeDouble(bid - RiskToReward * (slSell - bid),4);     
-   
-   text = "";
-   text += "-----------------------------------------\n";
-   text += "AR Universal Trading Pannel\n";
-   
-   text += "Tick => " + _Symbol + "\n";
-   text += "ask => " + DoubleToString(ask,2) + "\n";
-   text += "bid => " + DoubleToString(bid,2) + "\n";   
-   text += "slSell => " +  DoubleToString(slSell,2) + "\n";
-   text += "slBuy => " +  DoubleToString(slBuy,2) + "\n";
-   text += "ask_tp => " +  DoubleToString(ask_tp,2) + "\n";
-   text += "bid_tp => " +  DoubleToString(bid_tp,2) + "\n";   
-        
-   Comment(text);
+//   text = "";
+//   text += "-----------------------------------------\n";
+//   text += "AR Universal Trading Pannel\n";
+//   
+//   text += "Tick => " + _Symbol + "\n";
+//   text += "ask => " + DoubleToString(ask,2) + "\n";
+//   text += "bid => " + DoubleToString(bid,2) + "\n";   
+//   text += "slSell => " +  DoubleToString(slSell,2) + "\n";
+//   text += "slBuy => " +  DoubleToString(slBuy,2) + "\n";
+//   text += "tpBuy => " +  DoubleToString(tpBuy,2) + "\n";
+//   text += "tpSell => " +  DoubleToString(tpSell,2) + "\n";   
+//        
+//   Comment(text);
+
   }
   
 void  OnChartEvent(
@@ -138,9 +140,9 @@ void  OnChartEvent(
          if(sparam == BtnSell)
            {
             CTrade trade;          
-               if(trade.Sell(posLots,_Symbol,bid,slSell,bid_tp,"This is a SELL trade"))
+               if(trade.Sell(posLots,_Symbol,bid,slSell,tpSell,"This is a SELL trade"))
                {
-                Print("Sold ",posLots," Lots of ",_Symbol," @ ",bid," SL = ",slSell, " TP = ",bid_tp);
+                Print("Sold ",posLots," Lots of ",_Symbol," @ ",bid," SL = ",slSell, " TP = ",tpSell);
                }         
                              
                ObjectSetInteger(0,BtnSell,OBJPROP_STATE,false);
@@ -152,9 +154,9 @@ void  OnChartEvent(
          if(sparam == BtnBuy)
            {
             CTrade trade;          
-               if(trade.Buy(posLots,_Symbol,ask,slBuy,ask_tp,"This is a SELL trade"))
+               if(trade.Buy(posLots,_Symbol,ask,slBuy,tpBuy,"This is a SELL trade"))
                {
-                Print("Bought ",posLots," Lots of ",_Symbol," @ ",ask," SL = ",slBuy, " TP = ",ask_tp);
+                Print("Bought ",posLots," Lots of ",_Symbol," @ ",ask," SL = ",slBuy, " TP = ",tpBuy);
                }         
                              
                ObjectSetInteger(0,BtnBuy,OBJPROP_STATE,false);
